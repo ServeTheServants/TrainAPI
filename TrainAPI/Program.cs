@@ -19,6 +19,13 @@ namespace TrainAPI
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+                        .UseKestrel()
+                        .UseUrls("http://0.0.0.0:51841/")
+                        .UseContentRoot(Directory.GetCurrentDirectory())
+                        .UseIISIntegration()
+                        .UseStartup<Startup>()
+                        .UseConfiguration(new ConfigurationBuilder()
+                                                .AddCommandLine(args)
+                                                .Build());
     }
 }

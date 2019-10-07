@@ -19,7 +19,8 @@ namespace TrainAPI.Controllers
         [HttpGet]
         public ActionResult<List<Train>> GetTrains(string dispatchingStation, string arrivingStation, int day)
         {
-            /* Заполненные данные:
+            // Заполненные данные:
+            /*
             var train1 = new Train("752A");
             var train2 = new Train("754A");
             var train3 = new Train("756A");
