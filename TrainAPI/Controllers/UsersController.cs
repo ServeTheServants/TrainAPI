@@ -71,7 +71,7 @@ namespace TrainAPI.Controllers
             try
             {
                 _userService.Create(user, userDTO.Password);
-                return Ok();
+                return NoContent();
             }
             catch (AppException ex)
             {
@@ -104,7 +104,7 @@ namespace TrainAPI.Controllers
             try
             {
                 _userService.Update(user, userDTO.Password);
-                return Ok();
+                return NoContent();
             }
             catch (AppException ex)
             {
@@ -116,7 +116,7 @@ namespace TrainAPI.Controllers
         public IActionResult Delete(int id)
         {
             _userService.Delete(id);
-            return Ok();
+            return NoContent();
         }
     }
 }

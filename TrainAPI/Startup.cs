@@ -13,6 +13,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
+using TrainAPI.Middlewares;
 
 namespace TrainAPI
 {
@@ -52,6 +53,7 @@ namespace TrainAPI
 
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -90,6 +92,7 @@ namespace TrainAPI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseMiddleware<LoggingMiddleware>();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -104,7 +107,6 @@ namespace TrainAPI
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader());
-
             //app.UseHttpsRedirection();
             app.UseMvc();
         }
