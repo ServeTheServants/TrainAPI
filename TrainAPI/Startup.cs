@@ -29,17 +29,13 @@ namespace TrainAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var connectionStringTrain = @"Server=(localdb)\mssqllocaldb;Database=TrainAPI;Trusted_Connection=True;ConnectRetryCount=0";
-
-            var connectionStringUser = @"Server=(localdb)\mssqllocaldb;Database=Users;Trusted_Connection=True;ConnectRetryCount=0";
-
             services.AddCors();
 
             services.AddDbContext<UserContext>
-                (options => options.UseSqlServer(connectionStringUser));
+                (options => options.UseSqlServer(Configuration.GetConnectionString("UserDatabase")));
 
             services.AddDbContext<TrainContext>
-                (options => options.UseSqlServer(connectionStringTrain));
+                (options => options.UseSqlServer(Configuration.GetConnectionString("TrainDatabase")));
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2).AddJsonOptions(options =>
             {
@@ -48,7 +44,39 @@ namespace TrainAPI
 
             services.AddAutoMapper(typeof(Startup));
 
-            var appSettingsSection = Configuration.GetSection("AppSettings");
+            services.AddJwtAuthentication(Configuration);
+
+            services.AddScoped<IUserService, UserService>();
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            app.UseMiddleware<LoggingMiddleware>();
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+            app.UseAuthentication();
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+            //app.UseHttpsRedirection();
+            app.UseMvc();
+        }       
+    }
+
+    public static class ServiceCollectionExtensions
+    {
+        public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
+        {
+            var appSettingsSection = configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
 
             var appSettings = appSettingsSection.Get<AppSettings>();
@@ -85,30 +113,7 @@ namespace TrainAPI
                     ValidateAudience = false
                 };
             });
-
-            services.AddScoped<IUserService, UserService>();
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            app.UseMiddleware<LoggingMiddleware>();
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-            app.UseAuthentication();
-            app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
-            //app.UseHttpsRedirection();
-            app.UseMvc();
+            return services;
         }
     }
 }
